@@ -47,7 +47,10 @@ function Navbar() {
     <>
       <div className="sm:px-16 px-4 flex items-center justify-between py-4">
         <div className="text-lg sm:text-3xl tracking-[-0.08em] font-Poppins font-semibold">
-          Mintory
+          <div className="flex gap-2 items-center">
+            <img className="h-10" src="/mintory-logo.png" />
+            <span>Mintory</span>
+          </div>
         </div>
         <div
           onClick={() => {

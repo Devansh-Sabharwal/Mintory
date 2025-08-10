@@ -283,7 +283,10 @@ export default function CreateToken() {
         mintAddress: mint.toBase58(),
         signature,
         supply,
-        imageUrl,
+        imageUrl:
+          imageUrl.trim() == ""
+            ? "https://raw.githubusercontent.com/solana-developers/opos-asset/main/assets/DeveloperPortal/image.png"
+            : imageUrl,
       });
 
       // Show success modal instead of toast

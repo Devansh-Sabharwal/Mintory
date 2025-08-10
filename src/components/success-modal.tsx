@@ -76,7 +76,7 @@ export const TokenSuccessModal: React.FC<TokenSuccessModalProps> = ({
             <div className="mb-8 flex justify-center">
               <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-orange rotating-yz">
                 <img
-                  src={tokenData.imageUrl || "/placeholder.png"}
+                  src={tokenData.imageUrl || "/image.png"}
                   alt={tokenData.name}
                   className="w-full h-full object-cover"
                 />

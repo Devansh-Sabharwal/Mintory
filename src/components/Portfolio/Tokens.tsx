@@ -38,32 +38,46 @@ export default function Tokens() {
         {loading && <span className="loader mb-4"></span>}
       </div>
       <div className="flex flex-col gap-2 animate-fade-in">
-        {tokens.map((e, idx) => (
-          <div key={idx} className="bg-accent rounded-md px-2 sm:px-4 py-2 ">
+        {tokens.map((e) => (
+          <div key={e.mint} className="bg-accent rounded-md px-2 sm:px-4 py-2">
             <div className="flex justify-between items-center">
-              <div className="flex gap-4 items-center">
+              {/* Left side: image + token details */}
+              <div className="flex gap-3 sm:gap-4 items-center min-w-0">
                 <div>
                   <img
-                    className="rounded-full w-16"
-                    onError={(e) => {
-                      e.currentTarget.src = "/vite.svg";
+                    className="rounded-full w-12 sm:w-16 flex-shrink-0"
+                    onError={(ev) => {
+                      ev.currentTarget.src = "/vite.svg";
                     }}
                     alt="logo"
                     src={e.image || ""}
                   />
                 </div>
-                <div className="break-all">
-                  <div className="break-all font-geist text-lg font-semibold">
+
+                <div className="break-all min-w-0">
+                  <div className="break-all font-geist text-base sm:text-lg font-semibold truncate">
                     {e.name}
                   </div>
-                  <div className="text-sm break-all tracking-wide dark:text-gray-300/70">
+
+                  <div
+                    onClick={() => {
+                      window.open(
+                        `https://explorer.solana.com/address/${e.mint}?cluster=devnet`,
+                        "_blank"
+                      );
+                    }}
+                    className="hover:underline hover:text-blue-300 font-mono text-xs sm:text-sm tracking-wider text-gray-300/70 cursor-pointer truncate transition-all duration-300"
+                  >
                     {e.mint}
                   </div>
-                  <div className="text-lg font-medium mt-4 font-geist dark:text-gray-300/70">
+
+                  <div className="text-sm sm:text-lg font-medium mt-4 font-geist dark:text-gray-300/70 truncate">
                     {e.balance} <span>{e.symbol}</span>
                   </div>
                 </div>
               </div>
+
+              {/* Right side: send button */}
               <div
                 onClick={() => {
                   setTransactionForm(true);
@@ -71,13 +85,14 @@ export default function Tokens() {
                   setMint(e.mint);
                   setType(e.programType);
                 }}
-                className="mr-2 cursor-pointer"
+                className="ml-2 cursor-pointer flex-shrink-0"
               >
-                <Send className="hover:scale-110 transition-all duration-300" />
+                <Send className="hover:scale-110 w-4 sm:w-8 transition-all duration-300" />
               </div>
             </div>
           </div>
         ))}
+
         {tokens.length === 0 && !loading && (
           <div className="w-full text-center">
             No SPL tokens are associated with this account.

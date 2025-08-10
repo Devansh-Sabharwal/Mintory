@@ -16,8 +16,8 @@ const rpcUrl = import.meta.env.VITE_RPC_URL;
 export default function LaunchPad() {
   return (
     <ConnectionProvider
-      endpoint={`${rpcUrl}`}
-      // endpoint="https://api.devnet.solana.com"
+      // endpoint={`${rpcUrl}`}
+      endpoint="https://api.devnet.solana.com"
     >
       <WalletProvider wallets={[]} autoConnect>
         <WalletModalProvider>

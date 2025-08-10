@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Input } from "./ui/input";
 import { Label } from "@radix-ui/react-label";
 import { Coins } from "lucide-react";
+import { TokenSuccessModal } from "./success-modal";
 
 import { toast } from "sonner";
 import { Keypair, SystemProgram, Transaction } from "@solana/web3.js";
@@ -26,12 +27,14 @@ import {
   pack,
   type TokenMetadata,
 } from "@solana/spl-token-metadata";
+
 export type data = {
   name: string;
   symbol: string;
   image: string;
   description: string;
 };
+
 export default function CreateToken() {
   const wallet = useWallet();
   const { connection } = useConnection();
@@ -42,13 +45,21 @@ export default function CreateToken() {
   const [supply, setSupply] = useState<number>(0);
   const [refresh, setRefresh] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [createdTokenData, setCreatedTokenData] = useState<{
+    name: string;
+    symbol: string;
+    mintAddress: string;
+    signature: string;
+    supply: number;
+    imageUrl?: string;
+  } | null>(null);
 
   useFetchTokens(wallet.publicKey, refresh);
 
   async function uploadMetadataToIPFS(metadata: data): Promise<string> {
     const pinataApiKey = import.meta.env.VITE_PINATA_API_KEY;
     const pinataSecretKey = import.meta.env.VITE_PINATA_SECRET_KEY;
-    console.log(pinataApiKey, pinataSecretKey);
     try {
       const response = await fetch(
         "https://api.pinata.cloud/pinning/pinJSONToIPFS",
@@ -133,7 +144,7 @@ export default function CreateToken() {
         mintLen + metadataExtension + metadataLen
       );
 
-      console.log("Required lamports:", lamports);
+      // console.log("Required lamports:", lamports);
       console.log("Mint address:", mint.toBase58());
 
       // Create transaction with all necessary instructions
@@ -204,7 +215,7 @@ export default function CreateToken() {
         TOKEN_2022_PROGRAM_ID
       );
 
-      console.log("Associated token account:", ata.toBase58());
+      // console.log("Associated token account:", ata.toBase58());
 
       // 6. Create associated token account
       const createATAInstruction = createAssociatedTokenAccountInstruction(
@@ -245,7 +256,7 @@ export default function CreateToken() {
         preflightCommitment: "confirmed",
       });
 
-      console.log("Transaction sent:", signature);
+      // console.log("Transaction sent:", signature);
 
       // Confirm transaction
       const confirmation = await connection.confirmTransaction(
@@ -263,10 +274,20 @@ export default function CreateToken() {
         );
       }
 
-      console.log("Transaction confirmed:", signature);
-      toast.success(
-        `Token created successfully! TX: ${signature.slice(0, 8)}...`
-      );
+      // console.log("Transaction confirmed:", signature);
+
+      // Set token data for modal
+      setCreatedTokenData({
+        name,
+        symbol,
+        mintAddress: mint.toBase58(),
+        signature,
+        supply,
+        imageUrl,
+      });
+
+      // Show success modal instead of toast
+      setShowSuccessModal(true);
 
       // Reset form
       setName("");
@@ -299,103 +320,120 @@ export default function CreateToken() {
   };
 
   return (
-    <div className="mt-12 px-4 sm:px-16 animate-fade-in">
-      <div className="rounded-lg border border-white/10 pb-6 px-6 sm:px-8 py-6 bg-card">
-        <div className="font-medium text-2xl">Create Tokens</div>
-        <div className="text-white/60 py-1">Create your own MemeCoin</div>
-        <div className="mt-6">
-          <form onSubmit={createToken}>
-            <div className="mt-4">
-              <Label htmlFor="name" className="text-lg font-medium text-white">
-                Name
-              </Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="Enter Name of your token"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="text-base! bg-accent! py-6 text-white placeholder:text-white/60 placeholder:tracking-normal mt-2"
-                required
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="mt-4">
-              <Label
-                htmlFor="symbol"
-                className="text-lg font-medium text-white"
-              >
-                Symbol
-              </Label>
-              <Input
-                id="symbol"
-                type="text"
-                placeholder="Enter token symbol like BTC, SOL"
-                value={symbol}
-                onChange={(e) => setSymbol(e.target.value.toUpperCase())}
-                className="text-base! bg-accent! py-6 text-white placeholder:text-white/60 placeholder:tracking-normal mt-2"
-                required
-                disabled={isLoading}
-                maxLength={10}
-              />
-            </div>
-
-            <div className="mt-4">
-              <Label htmlFor="image" className="text-lg font-medium text-white">
-                Image URL (Optional)
-              </Label>
-              <Input
-                id="image"
-                type="url"
-                placeholder="https://example.com/image.png"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                className="text-base! bg-accent! py-6 text-white placeholder:text-white/60 placeholder:tracking-normal mt-2"
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="mt-4">
-              <Label
-                htmlFor="supply"
-                className="text-lg font-medium text-white"
-              >
-                Initial Supply
-              </Label>
-              <Input
-                id="supply"
-                type="number"
-                placeholder="Enter Initial Supply"
-                min={1}
-                max={1000000000}
-                value={supply || ""}
-                onChange={(e) => setSupply(parseFloat(e.target.value) || 0)}
-                className="text-base! bg-accent! py-6 text-white placeholder:text-white/60 placeholder:tracking-normal mt-2"
-                required
-                disabled={isLoading}
-              />
-            </div>
-
-            <button
-              disabled={isLoading || !wallet.connected}
-              type="submit"
-              className={`disabled:bg-orange/70 disabled:cursor-not-allowed mt-6 w-full sm:min-w-[150px] flex justify-center ${
-                isLoading ? "bg-orange/80" : "bg-orange"
-              } text-white font-medium py-2 px-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 text-lg cursor-pointer`}
-            >
-              <div className="flex items-center gap-3">
-                <Coins />
-                {isLoading
-                  ? "Creating Token..."
-                  : wallet.connected
-                  ? "Create Token"
-                  : "Connect Wallet"}
+    <>
+      <div className="mt-12 px-4 sm:px-16 animate-fade-in">
+        <div className="rounded-lg border border-white/10 pb-6 px-6 sm:px-8 py-6 bg-card">
+          <div className="font-medium text-2xl">Create Tokens</div>
+          <div className="text-white/60 py-1">Create your own MemeCoin</div>
+          <div className="mt-6">
+            <form onSubmit={createToken}>
+              <div className="mt-4">
+                <Label
+                  htmlFor="name"
+                  className="text-lg font-medium text-white"
+                >
+                  Name
+                </Label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="Enter Name of your token"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="text-base! bg-accent! py-6 text-white placeholder:text-white/60 placeholder:tracking-normal mt-2"
+                  required
+                  disabled={isLoading}
+                />
               </div>
-            </button>
-          </form>
+
+              <div className="mt-4">
+                <Label
+                  htmlFor="symbol"
+                  className="text-lg font-medium text-white"
+                >
+                  Symbol
+                </Label>
+                <Input
+                  id="symbol"
+                  type="text"
+                  placeholder="Enter token symbol like BTC, SOL"
+                  value={symbol}
+                  onChange={(e) => setSymbol(e.target.value.toUpperCase())}
+                  className="text-base! bg-accent! py-6 text-white placeholder:text-white/60 placeholder:tracking-normal mt-2"
+                  required
+                  disabled={isLoading}
+                  maxLength={10}
+                />
+              </div>
+
+              <div className="mt-4">
+                <Label
+                  htmlFor="image"
+                  className="text-lg font-medium text-white"
+                >
+                  Image URL (Optional)
+                </Label>
+                <Input
+                  id="image"
+                  type="url"
+                  placeholder="https://example.com/image.png"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  className="text-base! bg-accent! py-6 text-white placeholder:text-white/60 placeholder:tracking-normal mt-2"
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div className="mt-4">
+                <Label
+                  htmlFor="supply"
+                  className="text-lg font-medium text-white"
+                >
+                  Initial Supply
+                </Label>
+                <Input
+                  id="supply"
+                  type="number"
+                  placeholder="Enter Initial Supply"
+                  min={1}
+                  max={1000000000}
+                  value={supply || ""}
+                  onChange={(e) => setSupply(parseFloat(e.target.value) || 0)}
+                  className="text-base! bg-accent! py-6 text-white placeholder:text-white/60 placeholder:tracking-normal mt-2"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+
+              <button
+                disabled={isLoading || !wallet.connected}
+                type="submit"
+                className={`disabled:bg-orange/70 disabled:cursor-not-allowed mt-6 w-full sm:min-w-[150px] flex justify-center ${
+                  isLoading ? "bg-orange/80" : "bg-orange"
+                } text-white font-medium py-2 px-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 text-lg cursor-pointer`}
+              >
+                <div className="flex items-center gap-3">
+                  <Coins />
+                  {isLoading
+                    ? "Creating Token..."
+                    : wallet.connected
+                    ? "Create Token"
+                    : "Connect Wallet"}
+                </div>
+              </button>
+            </form>
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Success Modal */}
+      {createdTokenData && (
+        <TokenSuccessModal
+          isOpen={showSuccessModal}
+          onClose={() => setShowSuccessModal(false)}
+          tokenData={createdTokenData}
+        />
+      )}
+    </>
   );
 }

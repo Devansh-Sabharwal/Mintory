@@ -120,7 +120,10 @@ export default function CreateToken() {
         name: name,
         symbol: symbol,
         description: "Token created via mintory launchpad",
-        image: imageUrl,
+        image:
+          imageUrl.trim() == ""
+            ? "https://raw.githubusercontent.com/solana-developers/opos-asset/main/assets/DeveloperPortal/image.png"
+            : imageUrl,
       };
       const uri = await uploadMetadataToIPFS(data);
       // Create metadata object

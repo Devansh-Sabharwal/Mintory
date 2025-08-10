@@ -1,7 +1,17 @@
+import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function LandingPage() {
+  const navigate = useNavigate();
+  const wallet = useWallet();
+  useEffect(() => {
+    if (!wallet.publicKey) {
+      return;
+    }
+    navigate("/authenticate");
+  }, [wallet.publicKey]);
   return (
     <div className="relative h-screen overflow-y-hidden text-white font-urbanist">
       <div className="absolute inset-0 z-0 main-image" />
@@ -41,7 +51,6 @@ export default function LandingPage() {
 }
 function Navbar() {
   const { setVisible } = useWalletModal();
-  const navigate = useNavigate();
 
   return (
     <>
@@ -55,7 +64,6 @@ function Navbar() {
         <div
           onClick={() => {
             setVisible(true);
-            navigate("/authenticate");
           }}
           className="px-3 py-2 text-xs sm:text-base rounded-lg cursor-pointer active:scale-[0.98] hover:scale-[1.02] transition-all duration-300 bg-white text-black"
         >
@@ -85,7 +93,6 @@ function Hero() {
 }
 function ActionButton() {
   const { setVisible } = useWalletModal();
-  const navigate = useNavigate();
 
   return (
     <>
@@ -93,7 +100,6 @@ function ActionButton() {
         <div
           onClick={() => {
             setVisible(true);
-            navigate("/authenticate");
           }}
           className="active:scale-[0.98] px-6 sm:px-10 cursor-pointer transition-all duration-300 py-3 sm:py-4 text-base sm:text-lg font-geist font-medium bg-[#D74803] text-white rounded-xl hover:scale-[1.02]"
         >

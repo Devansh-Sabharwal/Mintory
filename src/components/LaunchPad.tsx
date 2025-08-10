@@ -11,7 +11,7 @@ import LandingPage from "./LandingPage/LandingPage";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Authenticate from "./Authenticate";
 
-const rpcUrl = import.meta.env.VITE_RPC_URL;
+// const rpcUrl = import.meta.env.VITE_RPC_URL;
 
 export default function LaunchPad() {
   return (

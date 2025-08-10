@@ -39,37 +39,40 @@ export default function Tokens() {
       </div>
       <div className="flex flex-col gap-2 animate-fade-in">
         {tokens.map((e, idx) => (
-          <div
-            key={idx}
-            onClick={() => {
-              setTransactionForm(true);
-              setCurrBalance(e.balance);
-              setMint(e.mint);
-              setType(e.programType);
-            }}
-            className="bg-accent rounded-md px-2 sm:px-4 py-2 "
-          >
+          <div key={idx} className="bg-accent rounded-md px-2 sm:px-4 py-2 ">
             <div className="flex justify-between items-center">
               <div className="flex gap-4 items-center">
                 <div>
                   <img
-                    className="rounded-full w-12"
+                    className="rounded-full w-16"
                     onError={(e) => {
                       e.currentTarget.src = "/vite.svg";
                     }}
+                    alt="logo"
                     src={e.image || ""}
                   />
                 </div>
-                <div>
-                  <div className="font-geist text-lg font-semibold">
+                <div className="break-all">
+                  <div className="break-all font-geist text-lg font-semibold">
                     {e.name}
                   </div>
-                  <div className="font-geist dark:text-gray-300/70">
-                    {e.balance} {e.symbol}
+                  <div className="text-sm break-all tracking-wide dark:text-gray-300/70">
+                    {e.mint}
+                  </div>
+                  <div className="text-lg font-medium mt-4 font-geist dark:text-gray-300/70">
+                    {e.balance} <span>{e.symbol}</span>
                   </div>
                 </div>
               </div>
-              <div className="mr-2 cursor-pointer">
+              <div
+                onClick={() => {
+                  setTransactionForm(true);
+                  setCurrBalance(e.balance);
+                  setMint(e.mint);
+                  setType(e.programType);
+                }}
+                className="mr-2 cursor-pointer"
+              >
                 <Send className="hover:scale-110 transition-all duration-300" />
               </div>
             </div>
